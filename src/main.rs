@@ -1,8 +1,8 @@
+#![allow(dead_code, unused_variables)]
+
 #[macro_use]
 extern crate diesel;
 extern crate dotenv;
-
-use std::sync::Arc;
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use dotenv::dotenv;
@@ -18,16 +18,17 @@ mod user;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let pool = Arc::new(postgres::db::create_pool());
+    let pool = postgres::db::create_pool();
 
-    let user_repo = Arc::new(UserRepository::new(pool.clone()));
-    let user_service = Arc::new(UserService::new(user_repo.clone()));
+    let user_repo = UserRepository::new(pool.clone());
+    let user_service = UserService::new(user_repo.clone());
 
+    println!("Server listening on 8080");
     HttpServer::new(move || {
-        let user_service = web::Data::new(Arc::clone(&user_service));
-        let user_repo = Arc::clone(&user_repo);
+        let user_service = web::Data::new(user_service.clone());
+
         App::new()
-            .app_data(user_repo)
+            .app_data(user_service)
             .service(web::scope("/user").configure(UserController::configure))
             .service(echo)
     })

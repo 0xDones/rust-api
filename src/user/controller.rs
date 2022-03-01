@@ -1,6 +1,4 @@
-use std::{ops::Deref, sync::Arc};
-
-use super::{repository::UserRepository, service::UserService};
+use super::service::UserService;
 use crate::{models::user::CreateUserDTO, user::model::User};
 use actix_web::{web, HttpResponse, Responder};
 
@@ -28,14 +26,13 @@ async fn get_users() -> impl Responder {
 }
 
 async fn create_user(
-    user_repo: web::Data<Arc<UserRepository>>,
+    user_service: web::Data<UserService>,
     user: web::Json<CreateUserDTO>,
 ) -> impl Responder {
     println!("Create User: {:#?}", user);
-    let ur = user_repo.clone();
     let user = web::block(move || {
-        let user = User::new();
-        ur.create_user(user)
+        let _user = User::new();
+        user_service.create_user()
     })
     .await
     .map_err(|e| {
