@@ -1,4 +1,4 @@
-use std::io::Error;
+use std::sync::Arc;
 
 use super::model::User;
 use crate::infra::postgres::schema::users;
@@ -6,11 +6,11 @@ use crate::{diesel::prelude::*, infra::postgres::db::DbPool};
 
 #[derive(Clone)]
 pub struct UserRepository {
-    pool: DbPool,
+    pool: Arc<DbPool>,
 }
 
 impl UserRepository {
-    pub fn new(pool: DbPool) -> Self {
+    pub fn new(pool: Arc<DbPool>) -> Self {
         Self { pool }
     }
 
@@ -19,13 +19,11 @@ impl UserRepository {
         *conn
     }
 
-    pub fn create_user(self, user: User) -> Result<(), Error> {
+    pub fn create_user(self, user: User) -> Result<User, diesel::result::Error> {
         let conn = self.get_conn();
 
         diesel::insert_into(users::table)
             .values(&user)
             .get_result::<User>(&conn)
-            .expect("Error saving new post");
-        Ok(())
     }
 }

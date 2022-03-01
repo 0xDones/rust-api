@@ -1,14 +1,14 @@
-use std::{io::Error, thread, time};
+use std::{io::Error, sync::Arc, thread, time};
 
 use super::{model::User, repository::UserRepository};
 
 #[derive(Clone)]
 pub struct UserService {
-    user_repo: UserRepository,
+    user_repo: Arc<UserRepository>,
 }
 
 impl UserService {
-    pub fn new(user_repo: UserRepository) -> Self {
+    pub fn new(user_repo: Arc<UserRepository>) -> Self {
         Self { user_repo }
     }
 
