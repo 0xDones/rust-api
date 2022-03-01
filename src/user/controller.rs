@@ -1,7 +1,8 @@
-use crate::models::user::CreateUserDTO;
-use actix_web::{web, HttpResponse, Responder};
+use std::{ops::Deref, sync::Arc};
 
-use super::service::UserService;
+use super::{repository::UserRepository, service::UserService};
+use crate::{models::user::CreateUserDTO, user::model::User};
+use actix_web::{web, HttpResponse, Responder};
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/{user_id}", web::get().to(get_user))
@@ -27,12 +28,17 @@ async fn get_users() -> impl Responder {
 }
 
 async fn create_user(
-    user_service: web::Data<UserService>,
+    user_repo: web::Data<Arc<UserRepository>>,
     user: web::Json<CreateUserDTO>,
 ) -> impl Responder {
     println!("Create User: {:#?}", user);
-    let svc = user_service.clone();
-    let user = web::block(move || svc.create_user()).await.map_err(|e| {
+    let ur = user_repo.clone();
+    let user = web::block(move || {
+        let user = User::new();
+        ur.create_user(user)
+    })
+    .await
+    .map_err(|e| {
         eprintln!("{}", e);
         HttpResponse::InternalServerError().finish()
     });

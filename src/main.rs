@@ -18,15 +18,16 @@ mod user;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let pool = postgres::db::create_pool();
+    let pool = Arc::new(postgres::db::create_pool());
 
-    let user_repo = UserRepository::new(pool.clone());
-    let user_service = UserService::new(user_repo);
+    let user_repo = Arc::new(UserRepository::new(pool.clone()));
+    let user_service = Arc::new(UserService::new(user_repo.clone()));
 
     HttpServer::new(move || {
-        let user_service = web::Data::new(user_service);
+        let user_service = web::Data::new(Arc::clone(&user_service));
+        let user_repo = Arc::clone(&user_repo);
         App::new()
-            .app_data(user_service.clone())
+            .app_data(user_repo)
             .service(web::scope("/user").configure(UserController::configure))
             .service(echo)
     })
