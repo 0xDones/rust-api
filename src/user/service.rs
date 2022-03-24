@@ -19,7 +19,7 @@ impl UserService {
             Err(e) => {
                 // Return domain error
                 println!("Failed to create user: {}", e);
-                Err(Error::new(ErrorKind::Other, "User already exist"))
+                Err(Error::new(ErrorKind::NotFound, "User not found"))
             }
         }
     }
