@@ -18,5 +18,6 @@ pub fn create_pool() -> DbPool {
         .connection_timeout(Duration::from_secs(5))
         .build(manager)
         .expect("Failed to create pool.");
+    println!("Connected to the database");
     pool
 }

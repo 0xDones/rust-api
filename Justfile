@@ -1,7 +1,7 @@
 set shell := ["/bin/bash", "-c"]
 
 run:
-  cargo watch -x 'run --bin drop-cases'
+  cargo watch -x 'run'
 
 test:
   for x in $(seq 5); do \
