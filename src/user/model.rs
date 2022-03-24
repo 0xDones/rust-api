@@ -1,7 +1,8 @@
 use crate::infra::postgres::schema::users;
+use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
-#[derive(Queryable, Insertable)]
+#[derive(Queryable, Insertable, Serialize)]
 pub struct User {
     pub id: i32,
     pub username: String,

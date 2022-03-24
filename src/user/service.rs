@@ -1,6 +1,6 @@
-use std::{io::Error, thread, time};
+use std::io::{Error, ErrorKind};
 
-use super::{model::User, repository::UserRepository};
+use super::{dto::CreateUserDTO, model::User, repository::UserRepository};
 
 #[derive(Clone)]
 pub struct UserService {
@@ -12,21 +12,32 @@ impl UserService {
         Self { user_repo }
     }
 
-    pub fn get_user(self, id: &str) -> Result<User, Error> {
-        println!("{}", format!("Getting user with id {}", id));
-        let ten_millis = time::Duration::from_millis(2000);
-
-        thread::sleep(ten_millis);
-        println!("{}", format!("Returning user with id {}", id));
-        let user = User::new();
-        Ok(user)
+    pub fn get_user(&self, user_id: i32) -> Result<User, Error> {
+        println!("{}", format!("Getting user with id {}", user_id));
+        match self.user_repo.get_user(user_id) {
+            Ok(user) => Ok(user),
+            Err(e) => {
+                // Return domain error
+                println!("Failed to create user: {}", e);
+                Err(Error::new(ErrorKind::Other, "User already exist"))
+            }
+        }
     }
 
-    pub fn create_user(&self) -> Result<User, Error> {
+    pub fn create_user(&self, create_user_dto: &CreateUserDTO) -> Result<User, Error> {
         println!("Creating user...");
         let user = User::new();
-        &self.user_repo.create_user(&user);
-        println!("User created.");
-        Ok(user)
+
+        match self.user_repo.create_user(&user) {
+            Ok(user) => {
+                println!("Created mf user");
+                Ok(user)
+            }
+            Err(e) => {
+                // Return domain error
+                println!("Failed to create user: {}", e);
+                Err(Error::new(ErrorKind::Other, "User already exist"))
+            }
+        }
     }
 }
